@@ -1,15 +1,15 @@
 package com.imgur.java;
 
-import org.apache.commons.io.FileUtils;
+import com.imgur.java.dto.Response.Endpoint;
+import io.restassured.builder.MultiPartSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.specification.MultiPartSpecification;
+import io.restassured.specification.ResponseSpecification;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -21,16 +21,25 @@ public class GetInfoImageTests extends BaseTest {
     private String uploadedImageId;
     static final String INPUT_IMAGE_FILE_PATH = "bird.jpg";
     private String fileString;
+    private MultiPartSpecification multiPartSpecification;
+    private ResponseSpecification responseSpecification;
 
     @BeforeEach
     void setUp() {
-        byte[] fileContent = getFileContent();
-        fileString = Base64.getEncoder().encodeToString(fileContent);
+        fileString = new EncoderBase64(INPUT_IMAGE_FILE_PATH).fileString();
+
+        multiPartSpecification = new MultiPartSpecBuilder(fileString)
+                .controlName("image")
+                .build();
+
+        requestSpecification = requestSpecification
+                .multiPart(multiPartSpecification);
+
+
         uploadedImageId = given()
-                .headers("Authorization", token)
+                .spec(requestSpecification)
                 .log()
                 .all()
-                .multiPart("image", fileString)
                 .when()
                 .post("/image")
                 .prettyPeek()
@@ -39,8 +48,17 @@ public class GetInfoImageTests extends BaseTest {
                 .response()
                 .jsonPath()
                 .getString("data.id");
-    }
 
+        responseSpecification = new ResponseSpecBuilder()
+                .expectBody("success", is(true))
+                .expectBody("data.id", is(notNullValue()))
+                .expectBody("data.type", CoreMatchers.is("image/jpeg"))
+                .expectBody("data.height", CoreMatchers.is(505))
+                .expectBody("data.width", CoreMatchers.is(530))
+                .expectBody("data.account_id", CoreMatchers.is(145270851))
+                .expectStatusCode(200)
+                .build();
+    }
 
     @Test
     @DisplayName("Получение информации о картинки")
@@ -49,47 +67,23 @@ public class GetInfoImageTests extends BaseTest {
         given()
                 .log()
                 .all()
-                .headers("Authorization", token)
-                .expect()
-                .body("success", is(true))
-                .body("data.id", is(notNullValue()))
-                .body("data.type", CoreMatchers.is("image/jpeg"))
-                .body("data.height", CoreMatchers.is(505))
-                .body("data.width", CoreMatchers.is(530))
-                .body("data.account_id", CoreMatchers.is(145270851))
-                .statusCode(200)
+                .spec(requestSpecification)
                 .when()
-                .get("/image/{imageHash}",   uploadedImageId)
+                .get(Endpoint.GET_IMAGE_REQUEST, uploadedImageId)
                 .prettyPeek()
-                .then();
-
+                .then()
+                .spec(responseSpecification);
     }
 
     @AfterEach
     void tearDown() {
 
         given()
-                .headers("Authorization", token)
+                .spec(requestSpecification)
                 .when()
-                .delete("/image/{imageHash}", uploadedImageId)
+                .delete(Endpoint.DELETE_IMAGE_REQUEST, uploadedImageId)
                 .prettyPeek()
                 .then()
                 .statusCode(200);
-
     }
-
-    private byte[] getFileContent() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File inputFile = new File(classLoader.getResource(INPUT_IMAGE_FILE_PATH).getFile());
-
-        byte[] bytes = new byte[0];
-        try {
-            bytes = FileUtils.readFileToByteArray(inputFile);
-            //           bytes = FileUtils.readFileToByteArray("src/test/resources/bird.jpg"); - абсолютный путь. 66-71 не нужно было бы
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bytes;
-    }
-
 }

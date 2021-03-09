@@ -1,14 +1,14 @@
 package com.imgur.java;
 
-import org.apache.commons.io.FileUtils;
+import com.imgur.java.dto.Response.Endpoint;
+import io.restassured.builder.MultiPartSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.specification.MultiPartSpecification;
+import io.restassured.specification.ResponseSpecification;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -18,27 +18,43 @@ public class AddFavorites extends BaseTest {
 
     private String uploadedImageId;
     static final String INPUT_IMAGE_FILE_PATH = "bird.jpg";
-    private String fileString;
+    MultiPartSpecification multiPartSpec = null;
+    ResponseSpecification responseSpecification = null;
+
 
     @BeforeEach
     void setUp() {
-        byte[] fileContent = getFileContent();
-        fileString = Base64.getEncoder().encodeToString(fileContent);
+        String fileString = new EncoderBase64(INPUT_IMAGE_FILE_PATH).fileString();
+
+        // Multi-part запросов
+        multiPartSpec = new MultiPartSpecBuilder(fileString)
+                .controlName("image")
+                .build();
+
+// Расширить спецификацию запроса
+        requestSpecification = requestSpecification
+                .multiPart(multiPartSpec);
+
         uploadedImageId = given()
-                .headers("Authorization", token)
+                .spec(requestSpecification)
                 .log()
                 .all()
-                .multiPart("image", fileString)
                 .when()
-                .post("/image")
+                .post(Endpoint.POST_IMAGE_REQUEST)
                 .prettyPeek()
                 .then()
                 .extract()
                 .response()
                 .jsonPath()
                 .getString("data.id");
-    }
 
+        responseSpecification = new ResponseSpecBuilder()
+                .expectBody("success", is(true))
+                .expectBody("data", is("favorited"))
+                .expectStatusCode(200)
+                .build();
+
+    }
 
     @Test
     @DisplayName("Добавление картинки в избранное")
@@ -47,42 +63,21 @@ public class AddFavorites extends BaseTest {
         given()
                 .log()
                 .all()
-                .headers("Authorization", token)
-                .expect()
-                .body("success", is(true))
-                .body("data", is("favorited"))
+                .spec(requestSpecification)
                 .when()
-                .post("/image/{imageHash}/favorite", uploadedImageId)
-                .prettyPeek()
-                .then()
-                .statusCode(200);
-
+                .post(Endpoint.POST_IMAGE_FAVORITE, uploadedImageId)
+                .prettyPeek();
     }
 
     @AfterEach
     void tearDown() {
 
         given()
-                .headers("Authorization", token)
+                .spec(requestSpecification)
                 .when()
-                .delete("/image/{imageHash}", uploadedImageId)
+                .delete(Endpoint.DELETE_IMAGE_REQUEST, uploadedImageId)
                 .prettyPeek()
                 .then()
                 .statusCode(200);
-
-       }
-
-    private byte[] getFileContent() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File inputFile = new File(classLoader.getResource(INPUT_IMAGE_FILE_PATH).getFile());
-
-        byte[] bytes = new byte[0];
-        try {
-            bytes = FileUtils.readFileToByteArray(inputFile);
-            //           bytes = FileUtils.readFileToByteArray("src/test/resources/bird.jpg"); - абсолютный путь. 66-71 не нужно было бы
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bytes;
     }
 }

@@ -1,6 +1,11 @@
 package com.imgur.java;
 
+import com.imgur.java.dto.Response.Endpoint;
+import com.imgur.java.dto.Response.GetAccountResponse;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.specification.ResponseSpecification;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,44 +16,50 @@ import static org.hamcrest.core.Is.is;
 public class GetAccountTests extends BaseTest {
 
     //static private Map<String, String> headers = new HashMap<>();
+    private ResponseSpecification responseSpecification;
+
+
+    @BeforeEach
+    void setUp() {
+        responseSpecification = new ResponseSpecBuilder()
+                .expectBody("success", is(true))
+                .expectBody("data.id", is(notNullValue()))
+                .expectBody("data.url", is(username))
+                .expectBody(CoreMatchers.containsString(username))
+                .expectBody("data.created", is(1613117403))
+                .expectStatusCode(200)
+                .build();
+
+    }
 
     @Test
     @DisplayName("Получение информации о пользователе.Получение ID")
     public void getAccountInfoTest() {
 
-         id = given()
+        GetAccountResponse response = given()
                 .log()
                 .all()
-                .headers("Authorization", token)
-                .expect()
-                .body("success", is(true))
-                .body("data.id", is(notNullValue()))
-                .body("data.url", is(username))
-                .body(CoreMatchers.containsString(username))
-                .body("data.created", is(1613117403))
-                .statusCode(200)
+                .spec(requestSpecification)
                 .when()
-                .get("/account/{username}", username)
+                .get(Endpoint.GET_ACCOUNT_REQUEST, username)
                 .prettyPeek()
                 .then()
+                .spec(responseSpecification)
                 .extract()
-                .response()
-                .jsonPath()
-//                .getString("data.url");
-//        assertThat(url, equalTo(username));
-                .getString("data.id");
+                .body()
+                .as(GetAccountResponse.class);
+        prop.setProperty("id", response.getData().getId().toString());
 
     }
-
 
     @Test
     @DisplayName("Неверный username")
     public void getAccountInfoNegativeTest() {
 
         given()
-                .headers("Authorization", token)
+                .spec(requestSpecification)
                 .when()
-                .get("https://api.imgur.com/3/account/{username}", "testprogmath1")
+                .get(Endpoint.GET_ACCOUNT_REQUEST, "testprogmath1")
                 .prettyPeek()
                 .then()
                 .statusCode(404);

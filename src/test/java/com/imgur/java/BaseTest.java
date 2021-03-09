@@ -2,6 +2,9 @@ package com.imgur.java;
 
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.FileInputStream;
@@ -15,6 +18,7 @@ public class BaseTest {
     public static String username;
     public static String token;
     public static String id;
+    public static RequestSpecification requestSpecification = null;
 
     @BeforeAll
     static void beforeAll() {
@@ -28,6 +32,13 @@ public class BaseTest {
 
         RestAssured.filters(new AllureRestAssured());
 
+        requestSpecification = new RequestSpecBuilder()
+                .addHeader("Authorization", token)
+                .setAccept(ContentType.ANY)
+                .build();
+
+
+
     }
 
     private static void loadProperties() {
@@ -38,6 +49,5 @@ public class BaseTest {
         }
 
     }
-
 
 }
