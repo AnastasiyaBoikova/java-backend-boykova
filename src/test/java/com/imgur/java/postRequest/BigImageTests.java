@@ -1,6 +1,7 @@
 package com.imgur.java.postRequest;
 
 import com.imgur.java.BaseTest;
+import io.qameta.allure.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,9 +24,12 @@ public class BigImageTests extends BaseTest {
         byte[] fileContent = getFileContent();
         fileString = Base64.getEncoder().encodeToString(fileContent);
     }
-
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature ("PostRequest")
+    @Flaky
     @Test
     @DisplayName("Загрузка тяжелого изображения")
+    @Attachment (value = "Вложение", type = "application/json", fileExtension = "Big.png")
     void uploadFileTest() {
 
 

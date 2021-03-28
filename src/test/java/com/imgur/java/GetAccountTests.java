@@ -1,5 +1,9 @@
 package com.imgur.java;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Flaky;
+import io.qameta.allure.Step;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,12 +15,15 @@ import static org.hamcrest.core.Is.is;
 public class GetAccountTests extends BaseTest {
 
     //static private Map<String, String> headers = new HashMap<>();
-
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("Get Account")
+    @Flaky
     @Test
+    @Step ("Positive")
     @DisplayName("Получение информации о пользователе.Получение ID")
     public void getAccountInfoTest() {
 
-         id = given()
+        id = given()
                 .log()
                 .all()
                 .headers("Authorization", token)
@@ -39,8 +46,10 @@ public class GetAccountTests extends BaseTest {
                 .getString("data.id");
 
     }
-
-
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("Get Account")
+    @Flaky
+    @Step ("NegativeTest")
     @Test
     @DisplayName("Неверный username")
     public void getAccountInfoNegativeTest() {

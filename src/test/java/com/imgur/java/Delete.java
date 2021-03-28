@@ -1,5 +1,9 @@
 package com.imgur.java;
 
+import io.qameta.allure.Attachment;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Flaky;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +42,10 @@ public class Delete extends BaseTest {
                 .getString("data.id");
     }
 
-
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("Delete Image")
+    @Flaky
+    @Attachment(value = "Вложение", type = "application/json", fileExtension = "bird.jpg")
     @Test
     @DisplayName("Удаление картинки")
     public void getAccountInfoTest() {

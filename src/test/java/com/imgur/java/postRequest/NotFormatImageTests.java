@@ -1,6 +1,7 @@
 package com.imgur.java.postRequest;
 
 import com.imgur.java.BaseTest;
+import io.qameta.allure.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +27,11 @@ public class NotFormatImageTests extends BaseTest {
 
     }
 
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("PostRequest")
+    @Flaky
+    @Attachment(value = "Вложение", type = "application/json", fileExtension = "notFormat.docx")
+   // @Step("PostRequest. Проверка загрузки файла")
     @Test
     @DisplayName("Загрузка не поддерживаемого формата изображения")
     void uploadFileTest() {

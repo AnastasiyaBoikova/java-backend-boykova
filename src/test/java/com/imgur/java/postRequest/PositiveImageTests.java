@@ -1,6 +1,10 @@
 package com.imgur.java.postRequest;
 
 import com.imgur.java.BaseTest;
+import io.qameta.allure.Attachment;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Flaky;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 
@@ -24,6 +28,10 @@ public class PositiveImageTests extends BaseTest {
         fileString = Base64.getEncoder().encodeToString(fileContent);
     }
 
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("PostRequest")
+    @Flaky
+    @Attachment(value = "Вложение", type = "application/json", fileExtension = "bird.jpg")
     @Test
     @DisplayName("Загрузка изображения 530*505")
     void uploadFileTest() {

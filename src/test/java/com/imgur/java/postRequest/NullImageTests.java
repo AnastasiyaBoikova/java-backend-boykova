@@ -1,6 +1,10 @@
 package com.imgur.java.postRequest;
 
 import com.imgur.java.BaseTest;
+import io.qameta.allure.Attachment;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Flaky;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,10 @@ public class NullImageTests extends BaseTest {
 
       private String uploadedImageId;
 
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("PostRequest")
+    @Flaky
+    @Attachment(value = "Вложение", type = "application/json", fileExtension = "null_jpg.jpg")
     @Test
     @DisplayName("Загрузка null изображения ")
     void uploadFileTest() {

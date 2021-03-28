@@ -1,5 +1,8 @@
 package com.imgur.java;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Flaky;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
@@ -41,7 +44,9 @@ public class GetInfoImageTests extends BaseTest {
                 .getString("data.id");
     }
 
-
+    @Epic(value = "Проверка Api Imgur.com")
+    @Feature("Get Image")
+    @Flaky
     @Test
     @DisplayName("Получение информации о картинки")
     public void getAccountInfoTest() {
